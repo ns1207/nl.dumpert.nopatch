@@ -1,38 +1,55 @@
 group = "app.template"
 
 patches {
-    // TODO: Update this section with your project details.
     about {
-        name = "UserXYZ Patches"
-        description = "Patches for apps I like"
-        source = "git@github.com:UserXYZ/morphe-patches.git"
-        author = "Awesome dev"
+        name = "Dumpert No Ads Patches"
+        description = "Patches for Dumpert"
+        source = "https://github.com/ns1207/nl.dumpert.nopatch"
+        author = "ns1207"
         contact = "na"
         website = "na"
         license = "GPLv3"
     }
 }
 
-// Separate configuration so gson is available at runtime for the
-// generatePatchesList task but never bundled into the APK.
-val patchListGeneratorClasspath = configurations.create("patchListGeneratorClasspath")
+val patchListGeneratorClasspath =
+    configurations.create("patchListGeneratorClasspath")
 
 dependencies {
-    compileOnly(libs.gson)
-    patchListGeneratorClasspath(libs.gson)
+    compileOnly(
+        fileTree(
+            mapOf(
+                "dir" to "../libs",
+                "include" to listOf("*.jar")
+            )
+        )
+    )
+
+    compileOnly(
+        fileTree(
+            mapOf(
+                "dir" to "libs",
+                "include" to listOf("*.jar")
+            )
+        )
+    )
+
+    implementation("com.google.code.gson:gson:2.10.1")
+    patchListGeneratorClasspath("com.google.code.gson:gson:2.10.1")
 }
 
 tasks {
     register<JavaExec>("generatePatchesList") {
         description = "Build patch with patch list"
-
         dependsOn(build)
 
-        classpath = sourceSets["main"].runtimeClasspath + patchListGeneratorClasspath
+        classpath =
+            sourceSets["main"].runtimeClasspath +
+                    patchListGeneratorClasspath
+
         mainClass.set("util.PatchListGeneratorKt")
     }
 
-    // Used by gradle-semantic-release-plugin.
     publish {
         dependsOn("generatePatchesList")
     }
